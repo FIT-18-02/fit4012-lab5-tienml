@@ -174,9 +174,6 @@ int main() {
 	}
 	cout << "Read in encrypted message from message.aes" << endl;
 
-	// Free memory
-	delete[] msg;
-
 	// Read in the key
 	string keystr;
 	ifstream keyfile;
