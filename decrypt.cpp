@@ -3,6 +3,7 @@
 
  */
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 #include <fstream>
 #include <sstream>
@@ -144,30 +145,34 @@ int main() {
 	cout << " 128-bit AES Decryption Tool " << endl;
 	cout << "=============================" << endl;
 
-	// Read in the message from message.aes
-	string msgstr;
-	ifstream infile;
-	infile.open("message.aes", ios::in | ios::binary);
-
-	if (infile.is_open())
-	{
-		getline(infile, msgstr); // The first line of file is the message
-		cout << "Read in encrypted message from message.aes" << endl;
-		infile.close();
+	// Read in the ciphertext bytes from message.aes (binary-safe)
+	ifstream infile("message.aes", ios::in | ios::binary);
+	if (!infile.is_open()) {
+		cout << "Unable to open file" << endl;
+		return 1;
 	}
 
-	else cout << "Unable to open file";
+	infile.seekg(0, ios::end);
+	streamsize fileSize = infile.tellg();
+	infile.seekg(0, ios::beg);
 
-	char * msg = new char[msgstr.size()+1];
-
-	strcpy(msg, msgstr.c_str());
-
-	int n = strlen((const char*)msg);
+	if (fileSize <= 0) {
+		cout << "message.aes is empty" << endl;
+		return 1;
+	}
+	if (fileSize % 16 != 0) {
+		cout << "Invalid ciphertext size (not a multiple of 16 bytes)" << endl;
+		return 1;
+	}
+	size_t n = static_cast<size_t>(fileSize);
 
 	unsigned char * encryptedMessage = new unsigned char[n];
-	for (int i = 0; i < n; i++) {
-		encryptedMessage[i] = (unsigned char)msg[i];
+	if (!infile.read(reinterpret_cast<char*>(encryptedMessage), fileSize)) {
+		cout << "Failed to read ciphertext" << endl;
+		delete[] encryptedMessage;
+		return 1;
 	}
+	cout << "Read in encrypted message from message.aes" << endl;
 
 	// Free memory
 	delete[] msg;
@@ -200,8 +205,7 @@ int main() {
 
 	KeyExpansion(key, expandedKey);
 	
-	int messageLen = strlen((const char *)encryptedMessage);
-
+	int messageLen = static_cast<int>(n);
 	unsigned char * decryptedMessage = new unsigned char[messageLen];
 
 	for (int i = 0; i < messageLen; i += 16) {
@@ -209,16 +213,20 @@ int main() {
 	}
 
 	cout << "Decrypted message in hex:" << endl;
+	cout << std::hex << std::setfill('0');
 	for (int i = 0; i < messageLen; i++) {
 		cout << hex << (int)decryptedMessage[i];
 		cout << " ";
+		cout << std::setw(2) << (int)decryptedMessage[i] << " ";
 	}
 	cout << endl;
+	delete[] encryptedMessage;
+	delete[] decryptedMessage;
 	cout << "Decrypted message: ";
 	for (int i = 0; i < messageLen; i++) {
 		cout << decryptedMessage[i];
 	}
-	cout << endl;
+	cout << std::dec << endl;
 
 	return 0;
 }
