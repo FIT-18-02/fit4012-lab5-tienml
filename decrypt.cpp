@@ -9,6 +9,7 @@
 #include <sstream>
 #include "structures.h"
 
+
 using namespace std;
 
 /* Used in Round() and serves as the final round during decryption
@@ -164,8 +165,8 @@ int main() {
 		cout << "Invalid ciphertext size (not a multiple of 16 bytes)" << endl;
 		return 1;
 	}
-	size_t n = static_cast<size_t>(fileSize);
 
+	size_t n = static_cast<size_t>(fileSize);
 	unsigned char * encryptedMessage = new unsigned char[n];
 	if (!infile.read(reinterpret_cast<char*>(encryptedMessage), fileSize)) {
 		cout << "Failed to read ciphertext" << endl;
@@ -173,6 +174,7 @@ int main() {
 		return 1;
 	}
 	cout << "Read in encrypted message from message.aes" << endl;
+
 
 	// Read in the key
 	string keystr;
@@ -210,20 +212,21 @@ int main() {
 	}
 
 	cout << "Decrypted message in hex:" << endl;
+
 	cout << std::hex << std::setfill('0');
 	for (int i = 0; i < messageLen; i++) {
-		cout << hex << (int)decryptedMessage[i];
-		cout << " ";
 		cout << std::setw(2) << (int)decryptedMessage[i] << " ";
 	}
-	cout << endl;
-	delete[] encryptedMessage;
-	delete[] decryptedMessage;
+	cout << std::dec << endl;
 	cout << "Decrypted message: ";
 	for (int i = 0; i < messageLen; i++) {
 		cout << decryptedMessage[i];
 	}
-	cout << std::dec << endl;
+	cout << endl;
+
+	delete[] encryptedMessage;
+	delete[] decryptedMessage;
 
 	return 0;
+
 }
